@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(timeout 5 curl -s http://localhost:3001/health)",
+      "Bash(timeout 5 curl -s http://localhost:3001/api/items)",
+      "Bash(timeout 5 curl -s http://localhost:3001/api/inspiration)",
+      "Bash(npm test)",
+      "Bash(npm run test:*)",
+      "Bash(python3:*)",
+      "Bash(npm start)"
+    ],
+    "deny": []
+  }
+}

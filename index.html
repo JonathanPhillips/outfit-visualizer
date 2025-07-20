@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outfit Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>Outfit Visualizer</h1>
+            <nav class="nav">
+                <button class="nav-btn active" data-section="inventory">My Closet</button>
+                <button class="nav-btn" data-section="builder">Outfit Builder</button>
+                <button class="nav-btn" data-section="inspiration">Inspiration</button>
+                <button class="nav-btn" data-section="saved">Saved Outfits</button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- Item Inventory Section -->
+            <section id="inventory" class="section active">
+                <div class="section-header">
+                    <h2>My Closet</h2>
+                    <button class="btn-secondary" onclick="refreshItems()">Refresh</button>
+                    <button class="btn-primary" id="add-item-btn">Add Item</button>
+                </div>
+                
+                <div class="category-filters">
+                    <button class="filter-btn active" data-category="all">All</button>
+                    <button class="filter-btn" data-category="tops">Tops</button>
+                    <button class="filter-btn" data-category="bottoms">Bottoms</button>
+                    <button class="filter-btn" data-category="shoes">Shoes</button>
+                    <button class="filter-btn" data-category="accessories">Accessories</button>
+                    <button class="filter-btn" data-category="outerwear">Outerwear</button>
+                </div>
+                
+                <div class="items-grid" id="items-grid">
+                    <!-- Items will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Outfit Builder Section -->
+            <section id="builder" class="section">
+                <div class="section-header">
+                    <h2>Outfit Builder</h2>
+                    <button class="btn-primary" id="save-outfit-btn">Save Outfit</button>
+                </div>
+                
+                <div class="builder-container">
+                    <div class="items-sidebar">
+                        <h3>Your Items</h3>
+                        <div class="sidebar-items" id="sidebar-items">
+                            <!-- Items for dragging will be shown here -->
+                        </div>
+                    </div>
+                    
+                    <div class="outfit-canvas">
+                        <div class="canvas-drop-zone" id="outfit-canvas">
+                            <p class="drop-message">Drag items here to create your outfit</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inspiration Section -->
+            <section id="inspiration" class="section">
+                <div class="section-header">
+                    <h2>Inspiration</h2>
+                    <button class="btn-primary" id="add-inspiration-btn">Add Inspiration</button>
+                </div>
+                
+                <div class="inspiration-grid" id="inspiration-grid">
+                    <!-- Inspiration items will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Saved Outfits Section -->
+            <section id="saved" class="section">
+                <div class="section-header">
+                    <h2>Saved Outfits</h2>
+                    <button class="btn-secondary" onclick="debugStorage()">Debug Storage</button>
+                </div>
+                
+                <div class="outfits-grid" id="outfits-grid">
+                    <!-- Saved outfits will be dynamically added here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for adding items -->
+    <div id="add-item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Item</h3>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-item-form">
+                    <div class="form-group">
+                        <label for="item-image">Upload Image:</label>
+                        <input type="file" id="item-image" name="image" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-name">Item Name:</label>
+                        <input type="text" id="item-name" name="name" placeholder="e.g., Blue Denim Jeans" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="item-category">Category:</label>
+                        <select id="item-category" name="category" required>
+                            <option value="">Select category</option>
+                            <option value="tops">Tops</option>
+                            <option value="bottoms">Bottoms</option>
+                            <option value="shoes">Shoes</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="outerwear">Outerwear</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary" id="cancel-add">Cancel</button>
+                        <button type="submit" class="btn-primary">Add Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

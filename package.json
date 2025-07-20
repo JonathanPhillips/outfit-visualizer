@@ -1,0 +1,27 @@
+{
+  "name": "outfit-visualizer",
+  "version": "1.0.0",
+  "description": "A simple outfit planning web app prototype",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest tests/simple.test.js",
+    "test:watch": "jest tests/simple.test.js --watch",
+    "test:coverage": "jest tests/simple.test.js --coverage",
+    "test:all": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"],
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "collectCoverageFrom": [
+      "script.js",
+      "!**/node_modules/**"
+    ]
+  }
+}

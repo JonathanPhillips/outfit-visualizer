@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
-const upload = require('../middleware/upload');
+const { upload, handleUploadError } = require('../middleware/upload');
+const { validateInspiration, validateId } = require('../middleware/validation');
 
 // Get all inspiration images
 router.get('/', async (req, res) => {
@@ -34,7 +35,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new inspiration
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', upload.single('image'), validateInspiration, async (req, res) => {
   try {
     const { description } = req.body;
     
@@ -79,7 +80,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete inspiration
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await db.query('DELETE FROM inspiration WHERE id = $1 AND user_id = 1 RETURNING *', [id]);

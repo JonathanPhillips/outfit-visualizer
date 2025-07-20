@@ -41,4 +41,41 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-module.exports = upload;
+// Enhanced error handling middleware for file uploads
+const handleUploadError = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    switch (err.code) {
+      case 'LIMIT_FILE_SIZE':
+        return res.status(400).json({ 
+          error: 'File too large', 
+          details: `Maximum file size is ${Math.round(parseInt(process.env.MAX_FILE_SIZE || '5242880') / 1024 / 1024)}MB` 
+        });
+      case 'LIMIT_FILE_COUNT':
+        return res.status(400).json({ 
+          error: 'Too many files', 
+          details: 'Only one file allowed per upload' 
+        });
+      case 'LIMIT_UNEXPECTED_FILE':
+        return res.status(400).json({ 
+          error: 'Unexpected file field', 
+          details: 'File must be uploaded in the "image" field' 
+        });
+      default:
+        return res.status(400).json({ 
+          error: 'File upload error', 
+          details: err.message 
+        });
+    }
+  }
+  
+  if (err.message && err.message.includes('Invalid file type')) {
+    return res.status(400).json({ 
+      error: 'Invalid file type', 
+      details: err.message 
+    });
+  }
+  
+  next(err);
+};
+
+module.exports = { upload, handleUploadError };

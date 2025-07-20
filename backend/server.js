@@ -53,7 +53,11 @@ app.use('/api/items', require('./routes/items'));
 app.use('/api/outfits', require('./routes/outfits'));
 app.use('/api/inspiration', require('./routes/inspiration'));
 
-// Error handling middleware
+// File upload error handling middleware
+const { handleUploadError } = require('./middleware/upload');
+app.use(handleUploadError);
+
+// General error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ 

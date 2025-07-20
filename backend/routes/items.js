@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
-const upload = require('../middleware/upload');
+const { upload, handleUploadError } = require('../middleware/upload');
+const { validateItem, validateId, validateQueryParams } = require('../middleware/validation');
 
 // Get all items
-router.get('/', async (req, res) => {
+router.get('/', validateQueryParams, async (req, res) => {
   try {
     const { category } = req.query;
     let query = 'SELECT * FROM items WHERE user_id = 1 ORDER BY created_at DESC';
@@ -24,7 +25,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get single item
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await db.query('SELECT * FROM items WHERE id = $1 AND user_id = 1', [id]);
@@ -41,21 +42,12 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new item
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', upload.single('image'), validateItem, async (req, res) => {
   try {
     const { name, category } = req.body;
-    
-    if (!name || !category) {
-      return res.status(400).json({ error: 'Name and category are required' });
-    }
 
     if (!req.file) {
       return res.status(400).json({ error: 'Image file is required' });
-    }
-
-    const validCategories = ['tops', 'bottoms', 'shoes', 'accessories', 'outerwear'];
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({ error: 'Invalid category' });
     }
 
     const imageUrl = `/uploads/${req.file.filename}`;
@@ -73,7 +65,7 @@ router.post('/', upload.single('image'), async (req, res) => {
 });
 
 // Update item
-router.put('/:id', async (req, res) => {
+router.put('/:id', validateId, validateItem, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, category } = req.body;
@@ -104,7 +96,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete item
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await db.query('DELETE FROM items WHERE id = $1 AND user_id = 1 RETURNING *', [id]);

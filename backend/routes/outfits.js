@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
+const { validateOutfit, validateId } = require('../middleware/validation');
 
 // Get all outfits
 router.get('/', async (req, res) => {
@@ -40,7 +41,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get single outfit
-router.get('/:id', async (req, res) => {
+router.get('/:id', validateId, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -83,17 +84,13 @@ router.get('/:id', async (req, res) => {
 });
 
 // Create new outfit
-router.post('/', async (req, res) => {
+router.post('/', validateOutfit, async (req, res) => {
   const client = await db.pool.connect();
   
   try {
     await client.query('BEGIN');
     
     const { name, items } = req.body;
-    
-    if (!name || !items || !Array.isArray(items)) {
-      return res.status(400).json({ error: 'Name and items array are required' });
-    }
 
     // Create the outfit
     const outfitResult = await client.query(
@@ -105,9 +102,6 @@ router.post('/', async (req, res) => {
 
     // Add items to the outfit
     for (const item of items) {
-      if (!item.id || typeof item.position_x !== 'number' || typeof item.position_y !== 'number') {
-        throw new Error('Each item must have id, position_x, and position_y');
-      }
       
       await client.query(
         'INSERT INTO outfit_items (outfit_id, item_id, position_x, position_y) VALUES ($1, $2, $3, $4)',
@@ -180,7 +174,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete outfit
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', validateId, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await db.query('DELETE FROM outfits WHERE id = $1 AND user_id = 1 RETURNING *', [id]);

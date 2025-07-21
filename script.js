@@ -78,6 +78,15 @@ function setupEventListeners() {
     addItemModal.addEventListener('click', (e) => {
         if (e.target === addItemModal) closeModal();
     });
+    
+    // Inspiration modal
+    const inspirationModal = document.getElementById('inspiration-modal');
+    const closeInspirationModalBtn = document.getElementById('close-inspiration-modal');
+    
+    closeInspirationModalBtn.addEventListener('click', closeInspirationModal);
+    inspirationModal.addEventListener('click', (e) => {
+        if (e.target === inspirationModal) closeInspirationModal();
+    });
 }
 
 // Navigation
@@ -120,6 +129,24 @@ function openModal() {
 function closeModal() {
     addItemModal.classList.remove('active');
     addItemForm.reset();
+}
+
+// Inspiration Modal Functions
+function openInspirationModal(imageUrl, description) {
+    const modal = document.getElementById('inspiration-modal');
+    const modalImage = document.getElementById('inspiration-modal-image');
+    const modalDescription = document.getElementById('inspiration-modal-description');
+    
+    modalImage.src = imageUrl;
+    modalDescription.textContent = description || '';
+    modalDescription.style.display = description ? 'block' : 'none';
+    
+    modal.classList.add('active');
+}
+
+function closeInspirationModal() {
+    const modal = document.getElementById('inspiration-modal');
+    modal.classList.remove('active');
 }
 
 // Item Management
@@ -575,6 +602,11 @@ function renderInspiration() {
             <img src="${fullImageUrl}" alt="Inspiration" class="inspiration-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNmNmY2ZjYiLz48dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjOTk5OTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW5zcGlyYXRpb248L3RleHQ+PC9zdmc+'">
             ${inspiration.description ? `<div class="inspiration-description">${inspiration.description}</div>` : ''}
         `;
+        
+        // Add click handler to open full-size image
+        inspirationCard.addEventListener('click', () => {
+            openInspirationModal(fullImageUrl, inspiration.description);
+        });
         
         inspirationGrid.appendChild(inspirationCard);
     });

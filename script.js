@@ -263,6 +263,26 @@ async function deleteItem(itemId) {
     }
 }
 
+async function deleteInspiration(inspirationId) {
+    if (!confirm('Are you sure you want to delete this inspiration image?')) {
+        return;
+    }
+    
+    try {
+        showLoading('Deleting inspiration...');
+        await api.deleteInspiration(inspirationId);
+        
+        // Remove from local state
+        AppState.inspiration = AppState.inspiration.filter(inspiration => inspiration.id != inspirationId);
+        renderInspiration();
+        hideLoading();
+    } catch (error) {
+        console.error('Error deleting inspiration:', error);
+        alert('Failed to delete inspiration: ' + error.message);
+        hideLoading();
+    }
+}
+
 function filterItems(category) {
     AppState.currentFilter = category;
     
@@ -599,13 +619,16 @@ function renderInspiration() {
         const fullImageUrl = imageUrl.startsWith('/uploads/') ? `http://localhost:3001${imageUrl}` : imageUrl;
         
         inspirationCard.innerHTML = `
+            <button class="delete-inspiration-btn" onclick="deleteInspiration('${inspiration.id}')" title="Delete inspiration">&times;</button>
             <img src="${fullImageUrl}" alt="Inspiration" class="inspiration-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNmNmY2ZjYiLz48dGV4dCB4PSIxMDAiIHk9IjEwMCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2IiBmaWxsPSIjOTk5OTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW5zcGlyYXRpb248L3RleHQ+PC9zdmc+'">
             ${inspiration.description ? `<div class="inspiration-description">${inspiration.description}</div>` : ''}
         `;
         
-        // Add click handler to open full-size image
-        inspirationCard.addEventListener('click', () => {
-            openInspirationModal(fullImageUrl, inspiration.description);
+        // Add click handler to open full-size image (but not on delete button)
+        inspirationCard.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('delete-inspiration-btn')) {
+                openInspirationModal(fullImageUrl, inspiration.description);
+            }
         });
         
         inspirationGrid.appendChild(inspirationCard);

@@ -352,6 +352,7 @@ body {
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     transition: transform 0.2s ease;
+    position: relative;
 }
 
 .inspiration-card:hover {
@@ -364,6 +365,32 @@ body {
     object-fit: cover;
     border-radius: 6px;
     margin-bottom: 0.75rem;
+}
+
+.delete-inspiration-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    color: #dc3545;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.delete-inspiration-btn:hover {
+    background: #dc3545;
+    color: white;
+    transform: scale(1.1);
 }
 
 /* Outfits Grid */

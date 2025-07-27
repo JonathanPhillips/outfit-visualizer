@@ -87,6 +87,41 @@ function setupEventListeners() {
     inspirationModal.addEventListener('click', (e) => {
         if (e.target === inspirationModal) closeInspirationModal();
     });
+    
+    // Bulk upload modal
+    const bulkUploadBtn = document.getElementById('bulk-upload-btn');
+    const bulkUploadModal = document.getElementById('bulk-upload-modal');
+    const closeBulkUploadModalBtn = document.getElementById('close-bulk-upload-modal');
+    const selectFilesBtn = document.getElementById('select-files-btn');
+    const bulkFileInput = document.getElementById('bulk-file-input');
+    const uploadDropzone = document.querySelector('.upload-dropzone');
+    
+    bulkUploadBtn.addEventListener('click', openBulkUploadModal);
+    closeBulkUploadModalBtn.addEventListener('click', closeBulkUploadModal);
+    bulkUploadModal.addEventListener('click', (e) => {
+        if (e.target === bulkUploadModal) closeBulkUploadModal();
+    });
+    selectFilesBtn.addEventListener('click', () => bulkFileInput.click());
+    bulkFileInput.addEventListener('change', handleBulkFileSelect);
+    
+    // Drag and drop for bulk upload
+    uploadDropzone.addEventListener('dragover', handleBulkDragOver);
+    uploadDropzone.addEventListener('drop', handleBulkDrop);
+    uploadDropzone.addEventListener('dragenter', handleBulkDragEnter);
+    uploadDropzone.addEventListener('dragleave', handleBulkDragLeave);
+    
+    // Edit item modal
+    const editItemModal = document.getElementById('edit-item-modal');
+    const closeEditModalBtn = document.getElementById('close-edit-modal');
+    const cancelEditBtn = document.getElementById('cancel-edit');
+    const editItemForm = document.getElementById('edit-item-form');
+    
+    closeEditModalBtn.addEventListener('click', closeEditItemModal);
+    cancelEditBtn.addEventListener('click', closeEditItemModal);
+    editItemModal.addEventListener('click', (e) => {
+        if (e.target === editItemModal) closeEditItemModal();
+    });
+    editItemForm.addEventListener('submit', handleEditItemSubmit);
 }
 
 // Navigation
@@ -757,4 +792,205 @@ Items: ${AppState.items.length} in memory, ${localStorage.getItem(STORAGE_KEYS.I
 Outfits: ${AppState.outfits.length} in memory, ${localStorage.getItem(STORAGE_KEYS.OUTFITS) ? JSON.parse(localStorage.getItem(STORAGE_KEYS.OUTFITS)).length : 0} in storage
 Inspiration: ${AppState.inspiration.length} in memory, ${localStorage.getItem(STORAGE_KEYS.INSPIRATION) ? JSON.parse(localStorage.getItem(STORAGE_KEYS.INSPIRATION)).length : 0} in storage
     `);
+}
+
+// Bulk Upload Functions
+let uploadedItems = [];
+let currentEditingItem = null;
+
+function openBulkUploadModal() {
+    const modal = document.getElementById('bulk-upload-modal');
+    const uploadArea = document.getElementById('bulk-upload-area');
+    const progressArea = document.getElementById('bulk-upload-progress');
+    const resultsArea = document.getElementById('bulk-upload-results');
+    
+    // Reset modal state
+    uploadArea.style.display = 'block';
+    progressArea.style.display = 'none';
+    resultsArea.style.display = 'none';
+    uploadedItems = [];
+    
+    modal.classList.add('active');
+}
+
+function closeBulkUploadModal() {
+    const modal = document.getElementById('bulk-upload-modal');
+    modal.classList.remove('active');
+}
+
+function handleBulkFileSelect(e) {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+        processBulkUpload(files);
+    }
+}
+
+function handleBulkDragOver(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function handleBulkDragEnter(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.target.classList.add('dragover');
+}
+
+function handleBulkDragLeave(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+        e.target.classList.remove('dragover');
+    }
+}
+
+function handleBulkDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    e.target.classList.remove('dragover');
+    
+    const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+    if (files.length > 0) {
+        processBulkUpload(files);
+    }
+}
+
+async function processBulkUpload(files) {
+    const uploadArea = document.getElementById('bulk-upload-area');
+    const progressArea = document.getElementById('bulk-upload-progress');
+    const resultsArea = document.getElementById('bulk-upload-results');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    
+    // Show progress
+    uploadArea.style.display = 'none';
+    progressArea.style.display = 'block';
+    
+    let uploadedCount = 0;
+    uploadedItems = [];
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        try {
+            progressText.textContent = `Uploading ${file.name}... (${i + 1} / ${files.length})`;
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('name', file.name.split('.')[0]); // Use filename without extension
+            formData.append('category', 'tops'); // Default category
+            
+            const item = await api.createItem(formData);
+            uploadedItems.push(item);
+            uploadedCount++;
+            
+            // Update progress
+            const progress = (uploadedCount / files.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${uploadedCount} / ${files.length} uploaded`;
+            
+        } catch (error) {
+            console.error(`Error uploading ${file.name}:`, error);
+            // Continue with other files
+        }
+    }
+    
+    // Update app state
+    AppState.items.push(...uploadedItems);
+    renderInventory();
+    
+    // Show results
+    progressArea.style.display = 'none';
+    resultsArea.style.display = 'block';
+    renderUploadedItems();
+}
+
+function renderUploadedItems() {
+    const grid = document.getElementById('uploaded-items-grid');
+    grid.innerHTML = '';
+    
+    uploadedItems.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'uploaded-item-card needs-metadata';
+        
+        const imageUrl = item.image_url.startsWith('/uploads/') ? `http://localhost:3001${item.image_url}` : item.image_url;
+        
+        card.innerHTML = `
+            <img src="${imageUrl}" alt="${item.name}" class="uploaded-item-image">
+            <div class="uploaded-item-name">${item.name}</div>
+            <div class="uploaded-item-category">${item.category}</div>
+            <div class="needs-metadata-badge">Click to Edit</div>
+        `;
+        
+        card.addEventListener('click', () => {
+            openEditItemModal(item);
+        });
+        
+        grid.appendChild(card);
+    });
+}
+
+// Edit Item Modal Functions
+function openEditItemModal(item) {
+    currentEditingItem = item;
+    const modal = document.getElementById('edit-item-modal');
+    const form = document.getElementById('edit-item-form');
+    const image = document.getElementById('edit-item-image');
+    const nameInput = document.getElementById('edit-item-name');
+    const categorySelect = document.getElementById('edit-item-category');
+    
+    // Populate form
+    const imageUrl = item.image_url.startsWith('/uploads/') ? `http://localhost:3001${item.image_url}` : item.image_url;
+    image.src = imageUrl;
+    nameInput.value = item.name;
+    categorySelect.value = item.category;
+    
+    modal.classList.add('active');
+}
+
+function closeEditItemModal() {
+    const modal = document.getElementById('edit-item-modal');
+    modal.classList.remove('active');
+    currentEditingItem = null;
+}
+
+async function handleEditItemSubmit(e) {
+    e.preventDefault();
+    
+    if (!currentEditingItem) return;
+    
+    const formData = new FormData(e.target);
+    const name = formData.get('name');
+    const category = formData.get('category');
+    
+    try {
+        showLoading('Updating item...');
+        
+        const updatedItem = await api.updateItem(currentEditingItem.id, {
+            name: name,
+            category: category
+        });
+        
+        // Update local state
+        const itemIndex = AppState.items.findIndex(item => item.id === currentEditingItem.id);
+        if (itemIndex !== -1) {
+            AppState.items[itemIndex] = updatedItem;
+        }
+        
+        // Update uploaded items array
+        const uploadedIndex = uploadedItems.findIndex(item => item.id === currentEditingItem.id);
+        if (uploadedIndex !== -1) {
+            uploadedItems[uploadedIndex] = updatedItem;
+        }
+        
+        renderInventory();
+        renderUploadedItems();
+        closeEditItemModal();
+        hideLoading();
+        
+    } catch (error) {
+        console.error('Error updating item:', error);
+        alert('Failed to update item: ' + error.message);
+        hideLoading();
+    }
 }

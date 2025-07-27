@@ -3,6 +3,21 @@
 ## Project Overview
 Web application for visualizing outfit combinations. Originally used browser localStorage, now migrating to PostgreSQL database.
 
+
+## Recent Accomplishments
+
+*Log major tasks, features, and fixes with timestamps for daily log automation*
+
+- 2025-07-27: Added accomplishment logging framework to CLAUDE.md
+- 2025-07-20: Major feature development session
+  - Added inspiration image modal viewer (index.html, script.js:126-141, styles.css:533-563)
+  - Implemented delete functionality for inspiration images with confirmation dialog (script.js:266-284)
+  - Created bulk upload tool with drag-and-drop support (index.html:145-175, script.js:797-996)
+  - Added metadata editing modal for batch-uploaded items (index.html:177-211)
+  - Enhanced validation middleware for all API endpoints (backend/middleware/validation.js)
+  - Fixed CORS configuration for multi-port development (backend/server.js:23)
+  - Commits: 8fa9237, 0cb2c8b, f04fa4c
+
 ## Database Setup Progress ✅
 - **PostgreSQL + pgAdmin** running in Docker containers
 - **Database schema** created with tables for users, items, outfits, outfit_items, inspiration
@@ -74,3 +89,12 @@ npm test
 # Run migrations
 cd backend && npm run migrate
 ```
+
+## Accomplishment Logging Guidelines
+
+When working on this project, Claude Code should update the "Recent Accomplishments" section with:
+- Date in YYYY-MM-DD format
+- Brief description of what was accomplished
+- File references when relevant (e.g., "Fixed bug in parser.py:45")
+- Commit hashes for significant changes
+- Deployment or release information
